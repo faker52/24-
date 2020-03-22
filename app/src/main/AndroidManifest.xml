@@ -26,6 +26,7 @@
             android:theme="@style/mydialogstyle"
             />
         <activity android:name=".SpeedActivity"/>
+        <activity android:name=".SocketPlay"/>
         <activity android:name=".InitActivity"> <intent-filter>
             <action android:name="android.intent.action.MAIN" />
 

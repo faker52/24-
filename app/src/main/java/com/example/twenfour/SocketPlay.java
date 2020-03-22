@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.StrictMode;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -15,6 +16,10 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +28,7 @@ import java.util.TimerTask;
 
 import cn.sensingai.commonlib.BaseApplication;
 
-public class SpeedActivity extends AppCompatActivity {
+public class SocketPlay extends AppCompatActivity {
 
     private GridView mGridView;
     private GridView mGridView1,mGridView3;
@@ -38,33 +43,66 @@ public class SpeedActivity extends AppCompatActivity {
     List<Integer> nums1=new ArrayList<>();
     List<Integer> nums2=new ArrayList<>();
     TextView textView;
-    Timer timer;
-    TimerTask timerTask;
-    DecimalFormat decimalFormat;
-    int time=0;
     int LastPosition;
-    int pracount=0;
-
     Baiduspeak speak=new Baiduspeak();
     private String[] provinceNames = new String[4];
     private String[] provinceNames1=new String[4];
     private int[] bgColor = new int[]{R.color.bgc, R.color.bgc, R.color.bgc, R.color.bgc};
     private String[] opName=new String[]{"加","减","乘","除"};
     private int[] images=new int[]{R.drawable.add,R.drawable.sub,R.drawable.mul,R.drawable.chu};
-    Intent grade;
+
+    private static final String HOST = "192.168.43.3";
+    private static final int PORT = 9999;
+    private Socket socket = null;
+    private BufferedReader in = null;
+    private PrintWriter out = null;
+    private String content = "";
+
+
+    public Handler handler = new Handler() {
+        public void handleMessage(Message msg) {
+            if (msg.what == 0x123) {
+                textView.setText(content);
+                content="";
+                speak.narmalspeak(SocketPlay.this,"对方答题完毕");
+                random();
+                initView1();
+                Count=0;
+            }
+        }
+
+        ;
+    };
+
 
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Intent intent = getIntent();
-        pracount=0;
         setContentView(R.layout.gird_view);
         textView=(TextView) findViewById(R.id.timetext);
         random();
         initView1();
         initView2();
         initView3();
-        statTime();
 
+
+        if (android.os.Build.VERSION.SDK_INT > 9) {
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+            StrictMode.setThreadPolicy(policy);
+        }
+
+        new Thread() {
+            public void run() {
+                try {
+                    socket=new Socket("192.168.43.3",9999);
+                    out=new PrintWriter(socket.getOutputStream(),true);
+                    Thread t2 = new Thread(new clientru());
+                    t2.start();
+                }catch(Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
 
 
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -72,10 +110,10 @@ public class SpeedActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if(Operator==-1) Turn=0;
                 if(provinceNames[position]==""){
-                    speak.narmalspeak(SpeedActivity.this,"此区域无数字");
+                    speak.narmalspeak(SocketPlay.this,"此区域无数字");
                 }
                 else if(Turn==0){
-                    speak.narmalspeak(SpeedActivity.this,provinceNames[position]);
+                    speak.narmalspeak(SocketPlay.this,provinceNames[position]);
                     LastPosition=position;
                     nums0.clear();
                     nums2.clear();
@@ -95,10 +133,10 @@ public class SpeedActivity extends AppCompatActivity {
                 }
                 else if(Turn==1) {
                     if (position == LastPosition) {
-                        speak.narmalspeak(SpeedActivity.this,"不可以使用相同的数字");
+                        speak.narmalspeak(SocketPlay.this,"不可以使用相同的数字");
                     }
                     else if(provinceNames[position]==""){
-                        speak.narmalspeak(SpeedActivity.this,"此区域无数字");
+                        speak.narmalspeak(SocketPlay.this,"此区域无数字");
                     }
                     else {
 
@@ -119,35 +157,30 @@ public class SpeedActivity extends AppCompatActivity {
                         if (Operator == 2) nums2 = mul(nums0, nums1);
                         if (Operator == 3 && nums1.get(0) != 0) nums2 = mychu(nums0, nums1);
                         if (nums1.get(0) == 0 && Operator == 3)
-                            speak.narmalspeak(SpeedActivity.this, "操作错误");
+                            speak.narmalspeak(SocketPlay.this, "操作错误");
                         if (nums2.get(1) == 1) {
                             provinceNames[position] = String.valueOf(nums2.get(0));
                             provinceNames[LastPosition] = "";
-                            speak.narmalspeak(SpeedActivity.this,"等于"+provinceNames[position]);
+                            speak.narmalspeak(SocketPlay.this,"等于"+provinceNames[position]);
                             Count++;
                         } else {
                             provinceNames[position] = (String.valueOf(nums2.get(0)) + "/" + String.valueOf(nums2.get(1)));
                             provinceNames[LastPosition] = "";
-                            speak.narmalspeak(SpeedActivity.this,"等于"+provinceNames[position]);
+                            speak.narmalspeak(SocketPlay.this,"等于"+provinceNames[position]);
                             Count++;
+
                         }
-                        Log.e(TAG, "onItemClick: nums2"+nums2 );
+
                         if(Count==3&&nums2.get(0)==24&&nums2.get(1)==1){
-                            speak.narmalspeak(SpeedActivity.this,"回答正确");
-                            pracount++;
-                            if(pracount==5){
-                                String x=formatTime(time);
-                                grade=new Intent(SpeedActivity.this,GradeDialog.class);
-                                grade.putExtra("time",String.valueOf(time));
-                                SpeedActivity.this.finish();
-                                startActivity(grade);
-                                Toast.makeText(SpeedActivity.this,x,Toast.LENGTH_LONG).show();
-                            }
-                            Log.e(TAG, "onItemClick: nums2"+nums2 );
+                            speak.narmalspeak(SocketPlay.this,"回答正确");
                             random();
                             initView1();
                             Count=0;
-
+                            if (socket.isConnected()) {
+                                if (!socket.isOutputShutdown()) {
+                                    out.println("对方获胜");
+                                }
+                            }
                         }
 
                     }
@@ -168,7 +201,7 @@ public class SpeedActivity extends AppCompatActivity {
                     Operator=-1;
                     initView1();
                     Turn=0;
-                    speak.narmalspeak(SpeedActivity.this,"已切换下一题");
+                    speak.narmalspeak(SocketPlay.this,"已切换下一题");
                 }
                 if(position==1){
                     provinceNames[0]=provinceNames1[0];
@@ -179,7 +212,7 @@ public class SpeedActivity extends AppCompatActivity {
                     Operator=-1;
                     initView1();
                     Turn=0;
-                    speak.narmalspeak(SpeedActivity.this,"已重置");
+                    speak.narmalspeak(SocketPlay.this,"已重置");
                 }
             }
 
@@ -188,7 +221,7 @@ public class SpeedActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Operator=position;
-                speak.narmalspeak(SpeedActivity.this,opName[Operator]);
+                speak.narmalspeak(SocketPlay.this,opName[Operator]);
             }});
 
 
@@ -239,63 +272,28 @@ public class SpeedActivity extends AppCompatActivity {
     }
 
 
-    private Handler handler = new Handler() {
+
+    class clientru implements Runnable
+    {
         @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            switch (msg.what) {
-                case 10:
-                    freshTime();
-                    break;
-                default:
-                    break;
-            }
-        }
-    };
+        public void run() {
+            BufferedReader in = null;
+            String msg="";
+            try{
+                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                while(true)
+                {
 
-    private void statTime(){
-        timer = new Timer();
-        timerTask = new TimerTask(){
-            @Override
-            public void run() {
+                    if((msg=in.readLine()) != null)
+                    {
+                        content=msg+"\n";
+                        handler.sendEmptyMessage(0x123);
 
-                Message msg = new Message();
-                msg.what = 10;
-                //发送
-                handler.sendMessage(msg);
-
-            }
-        };
-        if(timer != null){
-            timer.schedule(timerTask, 1000, 1000);//如果时间过长，间隔时间会不准
+                    }
+                }
+            }catch(Exception e){e.printStackTrace();}
         }
     }
-    private void stopTime(){
-        if(timer!= null){
-            timer.cancel();
-        }
-    }
-
-
-
-    private void freshTime() {
-        time++;
-        textView.setText(formatTime(time));
-    }  /**
-     * 将秒转化为 HH:mm:ss 的格式
-     * *     * @param time 秒
-     * * @return     */
-    private String formatTime(int time) {
-        if (decimalFormat == null) {
-            decimalFormat = new DecimalFormat("00");
-        }
-        String hh = decimalFormat.format(time / 3600);
-        String mm = decimalFormat.format(time % 3600 / 60);
-        String ss = decimalFormat.format(time % 60);
-        return hh + ":" + mm + ":" + ss;
-    }
-
-
 
 
     private String mMenuName="";//功能菜单名称
@@ -626,5 +624,6 @@ public class SpeedActivity extends AppCompatActivity {
     }
 
 }
+
 
 

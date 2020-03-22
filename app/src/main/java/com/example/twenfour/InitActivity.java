@@ -21,7 +21,7 @@ public class InitActivity extends AppCompatActivity {
 
     List<Fruit> function=new ArrayList<>();
     Baiduspeak speak=new Baiduspeak();
-    Intent rule,pra,speed;
+    Intent rule,pra,speed,socketplay;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,6 +33,7 @@ public class InitActivity extends AppCompatActivity {
         rule=new Intent(InitActivity.this,Rule.class);
         pra=new Intent(InitActivity.this,MainActivity.class);
         speed=new Intent(InitActivity.this,SpeedActivity.class);
+        socketplay=new Intent(InitActivity.this,SocketPlay.class);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id){
@@ -43,6 +44,8 @@ public class InitActivity extends AppCompatActivity {
                     startActivity(pra);
                 if(position==2)
                     startActivity(speed);
+                if(position==3)
+                    startActivity(socketplay);
             }});
 
         listView.setOnTouchListener(new CommonOnTouchListener(new CommonOnTouchListener.CommonOnTouchCallback() {
@@ -110,8 +113,10 @@ public class InitActivity extends AppCompatActivity {
         Fruit cc=new Fruit("游戏规则",R.drawable.guize);
         Fruit cc1=new Fruit("练习模式",R.drawable.pra);
         Fruit cc2=new Fruit("竞速模式",R.drawable.speed);
+        Fruit cc3=new Fruit("多人游戏",R.drawable.speed);
         function.add(cc);
         function.add(cc1);
         function.add(cc2);
+        function.add(cc3);
     }
 }
