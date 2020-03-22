@@ -53,7 +53,7 @@ public class SpeedActivity extends AppCompatActivity {
     private int[] images=new int[]{R.drawable.add,R.drawable.sub,R.drawable.mul,R.drawable.chu};
     Intent grade;
 
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Intent intent = getIntent();
         pracount=0;
@@ -101,7 +101,7 @@ public class SpeedActivity extends AppCompatActivity {
                         speak.narmalspeak(SpeedActivity.this,"此区域无数字");
                     }
                     else {
-                        speak.narmalspeak(SpeedActivity.this,provinceNames[position]);
+
                         if (provinceNames[position].contains("/")) {
                             String[] x = provinceNames[position].split("/");
                             nums1.add(Integer.valueOf(x[0]));
@@ -121,12 +121,13 @@ public class SpeedActivity extends AppCompatActivity {
                         if (nums1.get(0) == 0 && Operator == 3)
                             speak.narmalspeak(SpeedActivity.this, "操作错误");
                         if (nums2.get(1) == 1) {
-                            provinceNames[LastPosition] = String.valueOf(nums2.get(0));
-                            provinceNames[position] = "";
-                            Count++;
+                            provinceNames[position] = String.valueOf(nums2.get(0));
+                            provinceNames[LastPosition] = "";
+                            speak.narmalspeak(SpeedActivity.this,"等于"+provinceNames[position]);
                         } else {
-                            provinceNames[LastPosition] = (String.valueOf(nums2.get(0)) + "/" + String.valueOf(nums2.get(1)));
-                            provinceNames[position] = "";
+                            provinceNames[position] = (String.valueOf(nums2.get(0)) + "/" + String.valueOf(nums2.get(1)));
+                            provinceNames[LastPosition] = "";
+                            speak.narmalspeak(SpeedActivity.this,"等于"+provinceNames[position]);
                             Count++;
                         }
                         Log.e(TAG, "onItemClick: nums2"+nums2 );
@@ -186,6 +187,7 @@ public class SpeedActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Operator=position;
+                speak.narmalspeak(SpeedActivity.this,opName[Operator]);
             }});
 
 
@@ -210,6 +212,7 @@ public class SpeedActivity extends AppCompatActivity {
             }
             @Override
             public void onActionMove(MotionEvent event, View view) {
+
                 nativeSpeak(getItemName1(view));
             }
             @Override
@@ -338,6 +341,7 @@ public class SpeedActivity extends AppCompatActivity {
 
     private void nativeSpeak(String text) {
         if (!"-1".equals(text)) {
+            speak.stop();
             speak.narmalspeak(this,text);
         }
     }

@@ -98,6 +98,7 @@ public class InitActivity extends AppCompatActivity {
 
     private void nativeSpeak(String text) {
         if (!"-1".equals(text)) {
+            speak.stop();
             speak.narmalspeak(this,text);
         }
     }

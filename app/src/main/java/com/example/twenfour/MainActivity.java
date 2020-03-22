@@ -66,7 +66,6 @@ public class MainActivity extends AppCompatActivity {
         textView=(TextView) findViewById(R.id.timetext);
         random();
         initView1();
-        getanswer();
         initView2();
         initView3();
 
@@ -107,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
                         speak.narmalspeak(MainActivity.this,"此区域无数字");
                     }
                     else {
-                        speak.narmalspeak(MainActivity.this,provinceNames[position]);
+
                         if (provinceNames[position].contains("/")) {
                             String[] x = provinceNames[position].split("/");
                             nums1.add(Integer.valueOf(x[0]));
@@ -127,12 +126,15 @@ public class MainActivity extends AppCompatActivity {
                     if (nums1.get(0) == 0 && Operator == 3)
                         speak.narmalspeak(MainActivity.this, "操作错误");
                     if (nums2.get(1) == 1) {
-                        provinceNames[LastPosition] = String.valueOf(nums2.get(0));
-                        provinceNames[position] = "";
+                        provinceNames[position] = String.valueOf(nums2.get(0));
+                        provinceNames[LastPosition] = "";
+                        speak.narmalspeak(MainActivity.this,"等于"+provinceNames[position]);
                         Count++;
                     } else {
-                        provinceNames[LastPosition] = (String.valueOf(nums2.get(0)) + "/" + String.valueOf(nums2.get(1)));
-                        provinceNames[position] = "";
+
+                        provinceNames[position] = (String.valueOf(nums2.get(0)) + "/" + String.valueOf(nums2.get(1)));
+                        provinceNames[LastPosition] = "";
+                        speak.narmalspeak(MainActivity.this,"等于"+provinceNames[position]);
                         Count++;
                     }
                         Log.e(TAG, "onItemClick: nums2"+nums2 );
@@ -142,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
                             random();
                             initView1();
                             textView.setText(null);
-                            getanswer();
+
                             Count=0;
 
                     }
@@ -164,8 +166,9 @@ public class MainActivity extends AppCompatActivity {
                                                     Operator=-1;
                                                     initView1();
                                                     Turn=0;
-                                                    getanswer();
+
                                                     textView.setText(null);
+                                                    speak.stop();
                                                     speak.narmalspeak(MainActivity.this,"已切换下一题");
                                                 }
                                                 if(position==1){
@@ -178,10 +181,11 @@ public class MainActivity extends AppCompatActivity {
                                                     Operator=-1;
                                                     initView1();
                                                     Turn=0;
+                                                    speak.stop();
                                                     speak.narmalspeak(MainActivity.this,"已重置");
                                                 }
                                                  if(position==2){
-
+                                                     getanswer();
                                                      textView.setText(x);
                                                  }
                                              }
@@ -191,6 +195,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
              Operator=position;
+             speak.narmalspeak(MainActivity.this,opName[Operator]);
             }});
 
 
@@ -201,6 +206,7 @@ public class MainActivity extends AppCompatActivity {
             }
             @Override
             public void onActionMove(MotionEvent event, View view) {
+
                 nativeSpeak(getItemName(view));
             }
             @Override
@@ -215,6 +221,7 @@ public class MainActivity extends AppCompatActivity {
             }
             @Override
             public void onActionMove(MotionEvent event, View view) {
+
                 nativeSpeak(getItemName1(view));
             }
             @Override
@@ -241,63 +248,373 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void getanswer(){
-
+        List<Integer> temp=new ArrayList<>();
         if(remember1.get(0)==1){
             x="("+String.valueOf(remember.get(0))+"*"+String.valueOf(remember.get(1))+")";
+            temp.add(remember.get(0)*remember.get(1));
+            temp.add(1);
+            speak.narmalspeak(MainActivity.this,String.valueOf(remember.get(0))+"乘"+String.valueOf(remember.get(1))+"等于"+temp.get(0));
         }
         if(remember1.get(0)==2){
             x="("+String.valueOf(remember.get(0))+"+"+String.valueOf(remember.get(1))+")";
+            temp.add(remember.get(0)+remember.get(1));
+            temp.add(1);
+            speak.narmalspeak(MainActivity.this,String.valueOf(remember.get(0))+"加"+String.valueOf(remember.get(1))+"等于"+temp.get(0));
         }
         if(remember1.get(0)==5){
             x="("+String.valueOf(remember.get(0))+"/"+String.valueOf(remember.get(1))+")";
+            int t=gcd1(remember.get(0),remember.get(1));
+            temp.add(remember.get(0)/t);
+            temp.add(remember.get(1)/t);
+            if(temp.get(1)==1)
+            speak.narmalspeak(MainActivity.this,String.valueOf(remember.get(0))+"除"+String.valueOf(remember.get(1))+"等于"+temp.get(0));
+            else{
+                speak.narmalspeak(MainActivity.this,String.valueOf(remember.get(0))+"除"+String.valueOf(remember.get(1))+"等于"+temp.get(1)+"分之"+temp.get(0));
+            }
+
         }
         if(remember1.get(0)==6){
             x="("+String.valueOf(remember.get(0))+"-"+String.valueOf(remember.get(1))+")";
+            temp.add(remember.get(0)-remember.get(1));
+            temp.add(1);
+            speak.narmalspeak(MainActivity.this,String.valueOf(remember.get(0))+"减"+String.valueOf(remember.get(1))+"等于"+temp.get(0));
         }
         if(remember1.get(0)==3){
             x="("+String.valueOf(remember.get(1))+"-"+String.valueOf(remember.get(0))+")";
+
+            temp.add(remember.get(1)-remember.get(0));
+            temp.add(1);
+            speak.narmalspeak(MainActivity.this,String.valueOf(remember.get(1))+"减"+String.valueOf(remember.get(0))+"等于"+temp.get(0));
         }
         if(remember1.get(0)==4){
             x="("+String.valueOf(remember.get(1))+"/"+String.valueOf(remember.get(0))+")";
+            int t=gcd1(remember.get(0),remember.get(1));
+            temp.add(remember.get(1)/t);
+            temp.add(remember.get(0)/t);
+            if(temp.get(1)==1)
+                speak.narmalspeak(MainActivity.this,String.valueOf(remember.get(1))+"除"+String.valueOf(remember.get(0))+"等于"+temp.get(0));
+            else{
+                speak.narmalspeak(MainActivity.this,String.valueOf(remember.get(1))+"除"+String.valueOf(remember.get(0))+"等于"+temp.get(1)+"分之"+temp.get(0));
+            }
         }
+
+
+
 
 
         if(remember1.get(1)==1){
             x="("+x+"*"+String.valueOf(remember.get(2))+")";
+            if(temp.get(1)==1){
+                speak.narmalspeak(MainActivity.this,temp.get(0)+"乘"+remember.get(2)+"等于"+remember.get(2)*temp.get(0));
+                temp.set(0,remember.get(2)*temp.get(0));
+            }
+            else {
+                List<Integer> cc = new ArrayList<>();
+                List<Integer> in = new ArrayList<>();
+                cc.add(remember.get(2));
+                cc.add(1);
+                in=mul(temp,cc);
+                if(in.get(1)==1)
+                {
+                    speak.narmalspeak(MainActivity.this,temp.get(0)+"分之"+temp.get(1)+"乘"+remember.get(2)+"等于"+remember.get(2)*temp.get(0));
+                    temp.set(0,in.get(0));
+                    temp.set(1,in.get(1));
+                }
+                else{
+                    speak.narmalspeak(MainActivity.this,temp.get(0)+"分之"+temp.get(1)+"乘"+remember.get(2)+"等于"+in.get(0)+"分子"+in.get(1));
+                    temp.set(0,in.get(0));
+                    temp.set(1,in.get(1));
+                }
+
+            }
+
         }
         if(remember1.get(1)==2){
             x="("+x+"+"+String.valueOf(remember.get(2))+")";
+            if(temp.get(1)==1){
+                speak.narmalspeak(MainActivity.this,temp.get(0)+"加"+remember.get(2)+"等于"+(remember.get(2)+temp.get(0)));
+                temp.set(0,remember.get(2)+temp.get(0));
+            }
+            else {
+                List<Integer> cc = new ArrayList<>();
+                List<Integer> in = new ArrayList<>();
+                cc.add(remember.get(2));
+                cc.add(1);
+                in=myadd(temp,cc);
+
+                speak.narmalspeak(MainActivity.this,temp.get(0)+"分之"+temp.get(1)+"加"+remember.get(2)+"等于"+in.get(0)+"分子"+in.get(1));
+                temp.set(0,in.get(0));
+                temp.set(1,in.get(1));
+            }
+
+
         }
         if(remember1.get(1)==5){
             x="("+x+"/"+String.valueOf(remember.get(2))+")";
+            List<Integer> cc = new ArrayList<>();
+            List<Integer> in = new ArrayList<>();
+            if(temp.get(1)==1) {
+                cc.add(remember.get(2));
+                cc.add(1);
+                in=mychu(temp,cc);
+                if(in.get(1)==1){
+                    speak.narmalspeak(MainActivity.this,temp.get(0)+"除"+remember.get(2)+"等于"+in.get(0));
+                    temp.set(0,in.get(0));
+                    temp.set(1,in.get(1));
+                }
+                else{
+                    speak.narmalspeak(MainActivity.this,temp.get(0)+"除"+remember.get(2)+"等于"+in.get(1)+"分之"+in.get(0));
+                    temp.set(0,in.get(0));
+                    temp.set(1,in.get(1));
+                }
+            }
+            else{
+                cc.add(remember.get(2));
+                cc.add(1);
+                in=mychu(temp,cc);
+                if(in.get(1)==1){
+                    speak.narmalspeak(MainActivity.this,temp.get(1)+"分之"+temp.get(0)+"除"+remember.get(2)+"等于"+in.get(0));
+                    temp.set(0,in.get(0));
+                    temp.set(1,in.get(1));
+                }
+                else{
+                    speak.narmalspeak(MainActivity.this,temp.get(1)+"分之"+temp.get(0)+"除"+remember.get(2)+"等于"+in.get(1)+"分之"+in.get(0));
+                    temp.set(0,in.get(0));
+                    temp.set(1,in.get(1));
+                }
+            }
+
         }
         if(remember1.get(1)==6){
             x="("+x+"-"+String.valueOf(remember.get(2))+")";
+            if(temp.get(1)==1){
+                speak.narmalspeak(MainActivity.this,temp.get(0)+"减"+remember.get(2)+"等于"+(temp.get(0)-remember.get(2)));
+                temp.set(0,temp.get(0)-remember.get(2));
+            }
+            else {
+                List<Integer> cc = new ArrayList<>();
+                List<Integer> in = new ArrayList<>();
+                cc.add(remember.get(2));
+                cc.add(1);
+                in=mysub(temp,cc);
+                speak.narmalspeak(MainActivity.this,temp.get(0)+"分之"+temp.get(1)+"减"+remember.get(2)+"等于"+in.get(1)+"分子"+in.get(0));
+                temp.set(0,in.get(0));
+                temp.set(1,in.get(1));
+
+            }
         }
         if(remember1.get(1)==3){
             x="("+String.valueOf(remember.get(2))+"-"+x+")";
+            if(temp.get(1)==1){
+                speak.narmalspeak(MainActivity.this,remember.get(2)+"减"+temp.get(0)+"等于"+(remember.get(2)-temp.get(0)));
+                temp.set(0,remember.get(2)-temp.get(0));
+            }
+            else {
+                List<Integer> cc = new ArrayList<>();
+                List<Integer> in = new ArrayList<>();
+                cc.add(remember.get(2));
+                cc.add(1);
+                in=mysub(cc,temp);
+                speak.narmalspeak(MainActivity.this,remember.get(2)+"减"+temp.get(1)+"分之"+temp.get(0)+"等于"+in.get(1)+"分子"+in.get(0));
+                temp.set(0,in.get(0));
+                temp.set(1,in.get(1));
+
+            }
         }
         if(remember1.get(1)==4){
             x="("+String.valueOf(remember.get(2))+"/"+x+")";
+            List<Integer> cc = new ArrayList<>();
+            List<Integer> in = new ArrayList<>();
+            if(temp.get(1)==1) {
+                cc.add(remember.get(2));
+                cc.add(1);
+                in=mychu(cc,temp);
+                if(in.get(1)==1){
+                    speak.narmalspeak(MainActivity.this,remember.get(2)+"除"+temp.get(0)+"等于"+in.get(0));
+                    temp.set(0,in.get(0));
+                    temp.set(1,in.get(1));
+                }
+                else{
+                    speak.narmalspeak(MainActivity.this,remember.get(2)+"除"+temp.get(0)+"等于"+in.get(1)+"分之"+in.get(0));
+                    temp.set(0,in.get(0));
+                    temp.set(1,in.get(1));
+                }
+            }
+            else{
+                cc.add(remember.get(2));
+                cc.add(1);
+                in=mychu(cc,temp);
+                if(in.get(1)==1){
+                    speak.narmalspeak(MainActivity.this,remember.get(2)+"除"+temp.get(1)+"分之"+temp.get(0)+"等于"+in.get(0));
+                    temp.set(0,in.get(0));
+                    temp.set(1,in.get(1));
+                }
+                else{
+                    speak.narmalspeak(MainActivity.this,remember.get(2)+"除"+temp.get(1)+"分之"+temp.get(0)+"等于"+in.get(0)+"分之"+in.get(1));
+                    temp.set(0,in.get(0));
+                    temp.set(1,in.get(1));
+                }
+            }
+
         }
+
+
+
+
 
         if(remember1.get(2)==1){
             x="("+x+"*"+String.valueOf(remember.get(3))+")";
+            if(temp.get(1)==1){
+                speak.narmalspeak(MainActivity.this,temp.get(0)+"乘"+remember.get(3)+"等于"+remember.get(3)*temp.get(0));
+                temp.set(0,remember.get(3)*temp.get(0));
+            }
+            else {
+                List<Integer> cc = new ArrayList<>();
+                List<Integer> in = new ArrayList<>();
+                cc.add(remember.get(3));
+                cc.add(1);
+                in=mul(temp,cc);
+                if(in.get(1)==1)
+                {
+                    speak.narmalspeak(MainActivity.this,temp.get(0)+"分之"+temp.get(1)+"乘"+remember.get(3)+"等于"+remember.get(3)*temp.get(0));
+                    temp.set(0,in.get(0));
+                    temp.set(1,in.get(1));
+                }
+                else{
+                    speak.narmalspeak(MainActivity.this,temp.get(0)+"分之"+temp.get(1)+"乘"+remember.get(3)+"等于"+in.get(1)+"分子"+in.get(0));
+                    temp.set(0,in.get(0));
+                    temp.set(1,in.get(1));
+                }
+
+            }
         }
         if(remember1.get(2)==2){
             x="("+x+"+"+String.valueOf(remember.get(3))+")";
+            if(temp.get(1)==1){
+                speak.narmalspeak(MainActivity.this,temp.get(0)+"加"+remember.get(3)+"等于"+(remember.get(3)+temp.get(0)));
+                temp.set(0,remember.get(3)+temp.get(0));
+            }
+            else {
+                List<Integer> cc = new ArrayList<>();
+                List<Integer> in = new ArrayList<>();
+                cc.add(remember.get(3));
+                cc.add(1);
+                in=myadd(temp,cc);
+
+                speak.narmalspeak(MainActivity.this,temp.get(0)+"分之"+temp.get(1)+"加"+remember.get(3)+"等于"+in.get(1)+"分子"+in.get(0));
+                temp.set(0,in.get(0));
+                temp.set(1,in.get(1));
+            }
         }
         if(remember1.get(2)==5){
             x="("+x+"/"+String.valueOf(remember.get(3))+")";
+            List<Integer> cc = new ArrayList<>();
+            List<Integer> in = new ArrayList<>();
+            if(temp.get(1)==1) {
+                cc.add(remember.get(3));
+                cc.add(1);
+                in=mychu(temp,cc);
+                if(in.get(1)==1){
+                    speak.narmalspeak(MainActivity.this,temp.get(0)+"除"+remember.get(3)+"等于"+in.get(0));
+                    temp.set(0,in.get(0));
+                    temp.set(1,in.get(1));
+                }
+                else{
+                    speak.narmalspeak(MainActivity.this,temp.get(0)+"除"+remember.get(3)+"等于"+in.get(1)+"分之"+in.get(0));
+                    temp.set(0,in.get(0));
+                    temp.set(1,in.get(1));
+                }
+            }
+            else{
+                cc.add(remember.get(3));
+                cc.add(1);
+                in=mychu(temp,cc);
+                if(in.get(1)==1){
+                    speak.narmalspeak(MainActivity.this,temp.get(1)+"分之"+temp.get(0)+"除"+remember.get(3)+"等于"+in.get(0));
+                    temp.set(0,in.get(0));
+                    temp.set(1,in.get(1));
+                }
+                else{
+                    speak.narmalspeak(MainActivity.this,temp.get(1)+"分之"+temp.get(0)+"除"+remember.get(3)+"等于"+in.get(1)+"分之"+in.get(0));
+                    temp.set(0,in.get(0));
+                    temp.set(1,in.get(1));
+                }
+            }
+
         }
         if(remember1.get(2)==6){
             x="("+x+"-"+String.valueOf(remember.get(3))+")";
+            if(temp.get(1)==1){
+                speak.narmalspeak(MainActivity.this,temp.get(0)+"减"+remember.get(3)+"等于"+(temp.get(0)-remember.get(3)));
+                temp.set(0,temp.get(0)-remember.get(3));
+            }
+            else {
+                List<Integer> cc = new ArrayList<>();
+                List<Integer> in = new ArrayList<>();
+                cc.add(remember.get(3));
+                cc.add(1);
+                in=mysub(temp,cc);
+                speak.narmalspeak(MainActivity.this,temp.get(0)+"分之"+temp.get(1)+"减"+remember.get(3)+"等于"+in.get(1)+"分子"+in.get(0));
+                temp.set(0,in.get(0));
+                temp.set(1,in.get(1));
+
+            }
         }
         if(remember1.get(2)==3){
             x="("+String.valueOf(remember.get(3))+"-"+x+")";
+
+            if(temp.get(1)==1){
+                speak.narmalspeak(MainActivity.this,remember.get(3)+"减"+temp.get(0)+"等于"+(remember.get(3)-temp.get(0)));
+                temp.set(0,remember.get(3)-temp.get(0));
+            }
+            else {
+                List<Integer> cc = new ArrayList<>();
+                List<Integer> in = new ArrayList<>();
+                cc.add(remember.get(3));
+                cc.add(1);
+                in=mysub(cc,temp);
+                speak.narmalspeak(MainActivity.this,remember.get(3)+"减"+temp.get(1)+"分之"+temp.get(0)+"等于"+in.get(1)+"分子"+in.get(0));
+                temp.set(0,in.get(0));
+                temp.set(1,in.get(1));
+
+            }
         }
         if(remember1.get(2)==4){
             x="("+String.valueOf(remember.get(3))+"/"+x+")";
+
+            List<Integer> cc = new ArrayList<>();
+            List<Integer> in = new ArrayList<>();
+            if(temp.get(1)==1) {
+                cc.add(remember.get(3));
+                cc.add(1);
+                in=mychu(cc,temp);
+                if(in.get(1)==1){
+                    speak.narmalspeak(MainActivity.this,remember.get(3)+"除"+temp.get(0)+"等于"+in.get(0));
+                    temp.set(0,in.get(0));
+                    temp.set(1,in.get(1));
+                }
+                else{
+                    speak.narmalspeak(MainActivity.this,remember.get(3)+"除"+temp.get(0)+"等于"+in.get(1)+"分之"+in.get(0));
+                    temp.set(0,in.get(0));
+                    temp.set(1,in.get(1));
+                }
+            }
+            else{
+                cc.add(remember.get(3));
+                cc.add(1);
+                in=mychu(cc,temp);
+                if(in.get(1)==1){
+                    speak.narmalspeak(MainActivity.this,remember.get(3)+"除"+temp.get(1)+"分之"+temp.get(0)+"等于"+in.get(0));
+                    temp.set(0,in.get(0));
+                    temp.set(1,in.get(1));
+                }
+                else{
+                    speak.narmalspeak(MainActivity.this,remember.get(3)+"除"+temp.get(1)+"分之"+temp.get(0)+"等于"+in.get(1)+"分之"+in.get(0));
+                    temp.set(0,in.get(0));
+                    temp.set(1,in.get(1));
+                }
+            }
+
         }
 
     }
@@ -348,6 +665,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void nativeSpeak(String text) {
         if (!"-1".equals(text)) {
+            speak.stop();
             speak.narmalspeak(this,text);
         }
     }

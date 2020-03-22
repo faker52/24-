@@ -31,7 +31,7 @@ public class Baiduspeak{
         mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_SPEED, "5");
         mSpeechSynthesizer.setParam(SpeechSynthesizer.PARAM_PITCH, "5");
         mSpeechSynthesizer.initTts(TtsMode.ONLINE);
-        mSpeechSynthesizer.stop();
+
         mSpeechSynthesizer.speak(text);
     }
 
@@ -43,9 +43,9 @@ public class Baiduspeak{
             print("error code :" + result + " method:" + method + ", 错误码文档:http://yuyin.baidu.com/docs/tts/122 ");
         }
     }
-    // public  void stop(){
-    // mSpeechSynthesizer.stop();
-    // }
+     public  void stop(){
+    mSpeechSynthesizer.stop();
+     }
 
 
 }
