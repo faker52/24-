@@ -7,6 +7,7 @@ import android.os.Message;
 import android.os.StrictMode;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
@@ -51,28 +52,53 @@ public class SocketPlay extends AppCompatActivity {
     private String[] opName=new String[]{"加","减","乘","除"};
     private int[] images=new int[]{R.drawable.add,R.drawable.sub,R.drawable.mul,R.drawable.chu};
 
-    private static final String HOST = "192.168.43.3";
-    private static final int PORT = 9999;
+    private static final String HOST = "47.115.49.205";
+    private static final int PORT = 3000;
     private Socket socket = null;
     private BufferedReader in = null;
     private PrintWriter out = null;
     private String content = "";
+    private String content1 = "";
+    int Finishnum=0;
+    int OFinishnum=-2;
+    boolean Isyou=false;
 
 
     public Handler handler = new Handler() {
         public void handleMessage(Message msg) {
+
             if (msg.what == 0x123) {
                 textView.setText(content);
                 content="";
-                speak.narmalspeak(SocketPlay.this,"对方答题完毕");
-                random();
+
+            }
+
+            if(msg.what== 0x124){
+                if(Isyou==false){OFinishnum++;}
+                String[] split1=content1.split(",");
+                random(split1);
                 initView1();
+                textView.setText("你的得分"+Finishnum+":"+"对方得分"+OFinishnum);
                 Count=0;
+                Isyou=false;
             }
         }
-
-        ;
     };
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+
+            if (socket.isConnected()) {
+                if (!socket.isOutputShutdown()) {
+                    out.println("bye");
+                    this.finish();
+                }
+            }
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
 
 
     public void onCreate(final Bundle savedInstanceState) {
@@ -80,7 +106,22 @@ public class SocketPlay extends AppCompatActivity {
         Intent intent = getIntent();
         setContentView(R.layout.gird_view);
         textView=(TextView) findViewById(R.id.timetext);
-        random();
+        new Thread() {
+            public void run() {
+                try {
+                    socket=new Socket(HOST,PORT);
+                    out=new PrintWriter(socket.getOutputStream(),true);
+                    Thread t2 = new Thread(new clientru());
+                    t2.start();
+                }catch(Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
+        provinceNames[0]="";
+        provinceNames[1]="";
+        provinceNames[2]="";
+        provinceNames[3]="";
         initView1();
         initView2();
         initView3();
@@ -91,18 +132,7 @@ public class SocketPlay extends AppCompatActivity {
             StrictMode.setThreadPolicy(policy);
         }
 
-        new Thread() {
-            public void run() {
-                try {
-                    socket=new Socket("192.168.43.3",9999);
-                    out=new PrintWriter(socket.getOutputStream(),true);
-                    Thread t2 = new Thread(new clientru());
-                    t2.start();
-                }catch(Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }.start();
+
 
 
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -149,9 +179,7 @@ public class SocketPlay extends AppCompatActivity {
                             nums1.add(Integer.valueOf(provinceNames[position]));
                             nums1.add(1);
                         }
-                        Log.e(TAG, "onItemClick: nums0" + nums0);
-                        Log.e(TAG, "onItemClick: nums1" + nums1);
-                        Log.e(TAG, "onItemClick: op" + Operator);
+
                         if (Operator == 0) nums2 = myadd(nums0, nums1);
                         if (Operator == 1) nums2 = mysub(nums0, nums1);
                         if (Operator == 2) nums2 = mul(nums0, nums1);
@@ -173,18 +201,18 @@ public class SocketPlay extends AppCompatActivity {
 
                         if(Count==3&&nums2.get(0)==24&&nums2.get(1)==1){
                             speak.narmalspeak(SocketPlay.this,"回答正确");
-                            random();
-                            initView1();
                             Count=0;
+                            Isyou=true;
                             if (socket.isConnected()) {
                                 if (!socket.isOutputShutdown()) {
                                     out.println("对方获胜");
+                                    Finishnum++;
                                 }
                             }
+
                         }
 
                     }
-
                     Operator=-1;
                     initView1();
                     Turn=0;
@@ -196,12 +224,20 @@ public class SocketPlay extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if(position==0){
-                    Count=0;
-                    random();
-                    Operator=-1;
-                    initView1();
-                    Turn=0;
-                    speak.narmalspeak(SocketPlay.this,"已切换下一题");
+
+                    if (socket.isConnected()) {
+                        if (!socket.isOutputShutdown()) {
+                            out.println("bye");
+                            Finishnum++;
+                        }
+                    }
+                    Finishnum=0;
+                    OFinishnum=0;
+                    Intent grade=new Intent(SocketPlay.this,GradeDialog.class);
+                    grade.putExtra("time","Loser");
+                    SocketPlay.this.finish();
+                    startActivity(grade);
+
                 }
                 if(position==1){
                     provinceNames[0]=provinceNames1[0];
@@ -286,8 +322,14 @@ public class SocketPlay extends AppCompatActivity {
 
                     if((msg=in.readLine()) != null)
                     {
-                        content=msg+"\n";
-                        handler.sendEmptyMessage(0x123);
+
+
+                        if(msg.substring(0,3).equals("123")){
+                            content1=msg;
+                            handler.sendEmptyMessage(0x124);
+                        }
+                        else{content=msg+"\n";
+                        handler.sendEmptyMessage(0x123);}
 
                     }
                 }
@@ -362,7 +404,7 @@ public class SocketPlay extends AppCompatActivity {
         mGridView3 = (GridView) this.findViewById(R.id.grid_view3);
         List<ProvinceBean> provinceBeanList = new ArrayList<>();
         ProvinceBean provinceBean = new ProvinceBean();
-        provinceBean.setName("下一题");
+        provinceBean.setName("认输");
         provinceBean.setColor(bgColor[0]);
         provinceBeanList.add(provinceBean);
         ProvinceBean provinceBean1 = new ProvinceBean();
@@ -386,118 +428,16 @@ public class SocketPlay extends AppCompatActivity {
 
 
 
-    public void random(){
-        while (true){
-            int a=(int)(Math.random() * 10+1);
-            int b=(int)(Math.random() * 10+1);
-            int c=(int)(Math.random() * 10+1);
-            int d=(int)(Math.random() * 10+1);
-            Log.e(TAG, "random: "+a+","+b+","+c+","+d );
-            if(check1(a,b,c,d)){
-                provinceNames[0]=String.valueOf(a);
-                provinceNames[1]=String.valueOf(b);
-                provinceNames[2]=String.valueOf(c);
-                provinceNames[3]=String.valueOf(d);
+    public void random(String[] cc){
+                provinceNames[0]=cc[1];
+                provinceNames[1]=cc[2];
+                provinceNames[2]=cc[3];
+                provinceNames[3]=cc[4];
+                provinceNames1[0]=cc[1];
+                provinceNames1[1]=cc[2];
+                provinceNames1[2]=cc[3];
+                provinceNames1[3]=cc[4];
 
-                provinceNames1[0]=String.valueOf(a);
-                provinceNames1[1]=String.valueOf(b);
-                provinceNames1[2]=String.valueOf(c);
-                provinceNames1[3]=String.valueOf(d);
-
-                break;
-            }
-            else continue;
-
-
-        }
-    }
-
-
-    public static boolean check1(int a,int b,int c ,int d){
-        int[] nums=new int[4];
-        nums[0]=a;
-        nums[1]=b;
-        nums[2]=c;
-        nums[3]=d;
-
-
-        List<List<Integer>> res=new ArrayList<>();
-        res= permute(nums);
-        System.out.println(res);
-        for(int i=0;i<res.size();i++){
-            List<Integer> res1=new ArrayList<>();
-            res1=res.get(i);
-
-            if(check(res1.get(0),res1.get(1),res1.get(2),res1.get(3))) return true;
-        }
-        return false;
-
-    }
-
-    public static boolean check(int a, int b, int c, int d) {
-        int[] nums = new int[4];
-        nums[0] = a;
-        nums[1] = b;
-        nums[2] = c;
-        nums[3] = d;
-
-        List<List<Integer>> cc = new ArrayList<>();
-        for (int i = 0; i < 4; i++) {
-            List<Integer> in = new ArrayList<>();
-            in.add(nums[i]);
-            in.add(1);
-            cc.add(in);
-        }
-
-        List<Integer> in = new ArrayList<>();
-        List<List<Integer>> in1 = new ArrayList<>();
-
-        in.add(nums[0]);
-        in.add(1);
-        in1.add(in);
-
-        if (caculate(in1, cc, 1))
-            return true;
-        return false;
-    }
-
-    public static boolean caculate(List<List<Integer>> cc, List<List<Integer>> all, int step) {
-        if (step >= 4)
-            return false;
-        List<Integer> in = new ArrayList<>();
-        in = (List<Integer>) all.get(step);
-
-        for (int i = 0; i < cc.size(); i++) {
-            List<List<Integer>> cc1 = new ArrayList<>();
-            List<Integer> in1 = new ArrayList<>();
-
-
-            in1 = (List<Integer>) cc.get(i);
-            cc1.add(mul(in, in1));
-            cc1.add(myadd(in, in1));
-            cc1.add(mysub(in, in1));
-            cc1.add(mychu(in, in1));
-            cc1.add(mychu(in1, in));
-            cc1.add(mysub(in1, in));
-
-            for (int j = 0; j < cc1.size(); j++) {
-                in1 = (List<Integer>) cc1.get(j);
-                if (in1.get(0) == 24 && in1.get(1) == 1 && step == 3){
-
-                    return true;}
-
-                if (in1.get(0) == 0 || in1.get(1) == 0){
-                    cc1.remove(j);
-
-                }
-            }
-
-
-            if (caculate(cc1, all, step + 1)) {
-                return true;
-            }
-        }
-        return false;
 
     }
 
@@ -584,7 +524,6 @@ public class SocketPlay extends AppCompatActivity {
         return re;
 
     }
-
     public static int gcd1(int a, int b) {
 
         int k = 0;
@@ -596,34 +535,11 @@ public class SocketPlay extends AppCompatActivity {
             b = k;// 余数赋给被除数
         } while (k != 0);
         return a;// 返回被除数
-
     }
 
-    public static List<List<Integer>> permute(int[] nums) {
 
-        List<List<Integer>> res = new ArrayList<>();
-        int[] visited = new int[nums.length];
-        backtrack(res, nums, new ArrayList<Integer>(), visited);
-        return res;
 
     }
-
-    private static void backtrack(List<List<Integer>> res, int[] nums, ArrayList<Integer> tmp, int[] visited) {
-        if (tmp.size() == nums.length) {
-            res.add(new ArrayList<>(tmp));
-            return;
-        }
-        for (int i = 0; i < nums.length; i++) {
-            if (visited[i] == 1) continue;
-            visited[i] = 1;
-            tmp.add(nums[i]);
-            backtrack(res, nums, tmp, visited);
-            visited[i] = 0;
-            tmp.remove(tmp.size() - 1);
-        }
-    }
-
-}
 
 
 
