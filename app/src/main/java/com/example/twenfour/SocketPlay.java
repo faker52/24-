@@ -52,7 +52,7 @@ public class SocketPlay extends AppCompatActivity {
     private String[] opName=new String[]{"加","减","乘","除"};
     private int[] images=new int[]{R.drawable.add,R.drawable.sub,R.drawable.mul,R.drawable.chu};
 
-    private static final String HOST = "47.115.49.205";
+    private static final String HOST = "192.168.43.3";
     private static final int PORT = 3000;
     private Socket socket = null;
     private BufferedReader in = null;
@@ -70,10 +70,9 @@ public class SocketPlay extends AppCompatActivity {
             if (msg.what == 0x123) {
                 textView.setText(content);
                 content="";
-
             }
 
-            if(msg.what== 0x124){
+            else if(msg.what== 0x124){
                 if(Isyou==false){OFinishnum++;}
                 String[] split1=content1.split(",");
                 random(split1);
@@ -81,6 +80,18 @@ public class SocketPlay extends AppCompatActivity {
                 textView.setText("你的得分"+Finishnum+":"+"对方得分"+OFinishnum);
                 Count=0;
                 Isyou=false;
+            }
+            else if(msg.what==0x125){
+                if (socket.isConnected()) {
+                    Log.e(TAG, "发送的位置一成功" );
+                    if (!socket.isOutputShutdown()) {
+                        Log.e(TAG, "发送的位置二成功" );
+                        out.println("请出题");
+                    }
+                }
+
+                Finishnum=0;
+                OFinishnum=-8;
             }
         }
     };
@@ -106,13 +117,18 @@ public class SocketPlay extends AppCompatActivity {
         Intent intent = getIntent();
         setContentView(R.layout.gird_view);
         textView=(TextView) findViewById(R.id.timetext);
+        Log.e(TAG, "第一个位置成功" );
         new Thread() {
             public void run() {
                 try {
-                    socket=new Socket(HOST,PORT);
+                    Log.e(TAG, "第二个位置成功" );
+                    socket= ((MySocket)getApplication()).getSocket();
                     out=new PrintWriter(socket.getOutputStream(),true);
-                    Thread t2 = new Thread(new clientru());
-                    t2.start();
+                    Log.e(TAG, "第三个位置成功" );
+
+                    Thread t1 = new Thread(new SocketPlay.clientru());
+                    t1.start();
+
                 }catch(Exception e) {
                     e.printStackTrace();
                 }
@@ -125,6 +141,7 @@ public class SocketPlay extends AppCompatActivity {
         initView1();
         initView2();
         initView3();
+
 
 
         if (android.os.Build.VERSION.SDK_INT > 9) {
@@ -313,20 +330,22 @@ public class SocketPlay extends AppCompatActivity {
     {
         @Override
         public void run() {
-            BufferedReader in = null;
+            Log.e(TAG, "第四个位置成功" );
+
             String msg="";
             try{
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 while(true)
                 {
-
                     if((msg=in.readLine()) != null)
                     {
-
-
+                        Log.e(TAG, "接受的信息+play界面 "+msg);
                         if(msg.substring(0,3).equals("123")){
                             content1=msg;
                             handler.sendEmptyMessage(0x124);
+                        }
+                        else if(msg.equals("创建成功")){
+                            handler.sendEmptyMessage(0x125);
                         }
                         else{content=msg+"\n";
                         handler.sendEmptyMessage(0x123);}

@@ -21,7 +21,7 @@ public class InitActivity extends AppCompatActivity {
 
     List<Fruit> function=new ArrayList<>();
     Baiduspeak speak=new Baiduspeak();
-    Intent rule,pra,speed,socketplay;
+    Intent rule,pra,speed,socketlist;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,7 +33,7 @@ public class InitActivity extends AppCompatActivity {
         rule=new Intent(InitActivity.this,Rule.class);
         pra=new Intent(InitActivity.this,MainActivity.class);
         speed=new Intent(InitActivity.this,SpeedActivity.class);
-        socketplay=new Intent(InitActivity.this,SocketPlay.class);
+        socketlist=new Intent(InitActivity.this,SocketList.class);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id){
@@ -45,7 +45,7 @@ public class InitActivity extends AppCompatActivity {
                 if(position==2)
                     startActivity(speed);
                 if(position==3)
-                    startActivity(socketplay);
+                    startActivity(socketlist);
             }});
 
         listView.setOnTouchListener(new CommonOnTouchListener(new CommonOnTouchListener.CommonOnTouchCallback() {
