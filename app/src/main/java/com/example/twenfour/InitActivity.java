@@ -113,7 +113,7 @@ public class InitActivity extends AppCompatActivity {
         Fruit cc=new Fruit("游戏规则",R.drawable.guize);
         Fruit cc1=new Fruit("练习模式",R.drawable.pra);
         Fruit cc2=new Fruit("竞速模式",R.drawable.speed);
-        Fruit cc3=new Fruit("多人游戏",R.drawable.speed);
+        Fruit cc3=new Fruit("多人游戏",R.drawable.duoren);
         function.add(cc);
         function.add(cc1);
         function.add(cc2);

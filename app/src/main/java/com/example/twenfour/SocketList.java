@@ -40,10 +40,9 @@ public class SocketList extends AppCompatActivity {
 
 
     public void inital() {
-        Fruit cc = new Fruit("创建房间", R.drawable.guize);
-        Fruit cc1 = new Fruit("加入房间", R.drawable.guize);
+        Fruit cc = new Fruit("创建/搜索房间", R.drawable.serch);
+
         function.add(cc);
-        function.add(cc1);
 
 
     }

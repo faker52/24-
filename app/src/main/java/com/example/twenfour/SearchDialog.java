@@ -24,7 +24,7 @@ import java.net.Socket;
 public class SearchDialog extends AppCompatActivity {
 
 
-    private static final String HOST = "192.168.43.3";
+    private static final String HOST = "192.168.43.3";//47.115.49.205
     private static final int PORT = 3000;
     private Socket socket = null;
     private BufferedReader in = null;
@@ -70,6 +70,7 @@ public class SearchDialog extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String msg = editText.getText().toString();
+                SocketPlay.putExtra("housenum",msg);
                 msg="housenum#"+msg;
                 if (socket.isConnected()) {
                     if (!socket.isOutputShutdown()) {

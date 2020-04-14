@@ -52,8 +52,6 @@ public class SocketPlay extends AppCompatActivity {
     private String[] opName=new String[]{"加","减","乘","除"};
     private int[] images=new int[]{R.drawable.add,R.drawable.sub,R.drawable.mul,R.drawable.chu};
 
-    private static final String HOST = "192.168.43.3";
-    private static final int PORT = 3000;
     private Socket socket = null;
     private BufferedReader in = null;
     private PrintWriter out = null;
@@ -62,6 +60,7 @@ public class SocketPlay extends AppCompatActivity {
     int Finishnum=0;
     int OFinishnum=-2;
     boolean Isyou=false;
+    String housenum;
 
 
     public Handler handler = new Handler() {
@@ -102,7 +101,7 @@ public class SocketPlay extends AppCompatActivity {
 
             if (socket.isConnected()) {
                 if (!socket.isOutputShutdown()) {
-                    out.println("bye");
+                    out.println("bye"+"#"+housenum);
                     this.finish();
                 }
             }
@@ -118,6 +117,7 @@ public class SocketPlay extends AppCompatActivity {
         setContentView(R.layout.gird_view);
         textView=(TextView) findViewById(R.id.timetext);
         Log.e(TAG, "第一个位置成功" );
+        housenum=intent.getStringExtra("housenum");
         new Thread() {
             public void run() {
                 try {
@@ -244,7 +244,7 @@ public class SocketPlay extends AppCompatActivity {
 
                     if (socket.isConnected()) {
                         if (!socket.isOutputShutdown()) {
-                            out.println("bye");
+                            out.println("bye"+"#"+housenum);
                             Finishnum++;
                         }
                     }
