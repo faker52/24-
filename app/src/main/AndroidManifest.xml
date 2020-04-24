@@ -27,6 +27,7 @@
         android:theme="@style/mydialogstyle"
         />
         <activity android:name=".SearchDialog"/>
+        <activity android:name=".HouseList"/>
         <activity android:name=".SpeedActivity"/>
         <activity android:name=".SocketPlay"/>
         <activity android:name=".SocketList"/>

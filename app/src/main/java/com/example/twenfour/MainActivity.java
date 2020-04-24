@@ -14,6 +14,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.text.DecimalFormat;
@@ -71,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mGridView.getLayoutParams();
 
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

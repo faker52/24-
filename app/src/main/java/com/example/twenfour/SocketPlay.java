@@ -82,15 +82,15 @@ public class SocketPlay extends AppCompatActivity {
             }
             else if(msg.what==0x125){
                 if (socket.isConnected()) {
-                    Log.e(TAG, "发送的位置一成功" );
+
                     if (!socket.isOutputShutdown()) {
-                        Log.e(TAG, "发送的位置二成功" );
+
                         out.println("请出题");
                     }
                 }
 
                 Finishnum=0;
-                OFinishnum=-8;
+                OFinishnum=-4;
             }
         }
     };
@@ -116,19 +116,16 @@ public class SocketPlay extends AppCompatActivity {
         Intent intent = getIntent();
         setContentView(R.layout.gird_view);
         textView=(TextView) findViewById(R.id.timetext);
-        Log.e(TAG, "第一个位置成功" );
+
         housenum=intent.getStringExtra("housenum");
         new Thread() {
             public void run() {
                 try {
-                    Log.e(TAG, "第二个位置成功" );
+
                     socket= ((MySocket)getApplication()).getSocket();
                     out=new PrintWriter(socket.getOutputStream(),true);
-                    Log.e(TAG, "第三个位置成功" );
-
                     Thread t1 = new Thread(new SocketPlay.clientru());
                     t1.start();
-
                 }catch(Exception e) {
                     e.printStackTrace();
                 }
@@ -330,7 +327,7 @@ public class SocketPlay extends AppCompatActivity {
     {
         @Override
         public void run() {
-            Log.e(TAG, "第四个位置成功" );
+
 
             String msg="";
             try{

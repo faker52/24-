@@ -24,12 +24,11 @@ import java.net.Socket;
 public class SearchDialog extends AppCompatActivity {
 
 
-    private static final String HOST = "192.168.43.3";//47.115.49.205
-    private static final int PORT = 3000;
+
     private Socket socket = null;
-    private BufferedReader in = null;
+
     private PrintWriter out = null;
-    private String content = "";
+
     Button button;
     EditText editText;
     String TAG="hh";
@@ -46,18 +45,15 @@ public class SearchDialog extends AppCompatActivity {
         editText=(EditText)findViewById(R.id.search);
         button=(Button)findViewById(R.id.sendnum);
         SocketPlay=new Intent(SearchDialog.this,SocketPlay.class);
-        if (android.os.Build.VERSION.SDK_INT > 9) {
-            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-            StrictMode.setThreadPolicy(policy);
-        }
+        Log.e("Search","1" );
 
         new Thread() {
             public void run() {
                 try {
-                    socket=new Socket(HOST,PORT);
+                    Log.e("Search","1" );
+                    socket= ((MySocket)getApplication()).getSocket();
                     out=new PrintWriter(socket.getOutputStream(),true);
-                    ((MySocket)getApplication()).setSocket(socket);
-
+                    Log.e("Search","2" );
                 }catch(Exception e) {
                     e.printStackTrace();
                 }
